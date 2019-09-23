@@ -1,2 +1,9 @@
+FROM maven AS builder
+RUN git clone -b 5.4.3 https://github.com/plainpicture/sort-script.git /root/sort-script
+WORKDIR /root/sort-script
+RUN mvn -Dmaven.test.skip=true clean package
+
 FROM elasticsearch:5.4.3
-RUN cd plugins && wget https://github.com/plainpicture/sort-script/releases/download/untagged-27ee990946456c5d53b1/sort-script.tar.gz && tar xzf sort-script.tar.gz && rm sort-script.tar.gz
+RUN mkdir -p /usr/share/elasticsearch/plugins/sort-script/
+COPY --from=builder /root/sort-script/target/sort-script-1.0.jar /usr/share/elasticsearch/plugins/sort-script/
+COPY --from=builder /root/sort-script/resources/plugin-descriptor.properties /usr/share/elasticsearch/plugins/sort-script/
